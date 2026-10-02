@@ -64,20 +64,14 @@ Clone with submodules (ggml is vendored at `third_party/ggml`):
 git clone --recursive https://github.com/mudler/locate-anything.cpp
 cd locate-anything.cpp
 cmake -B build -DLA_BUILD_TESTS=ON -DLA_BUILD_CLI=ON
-cmake --build build -j 4     # cap the job count — see note below
+cmake --build build -j 4     # explicit job count — see note below
 ```
 
-> **Note on `-j`:** use a *bounded* job count (e.g. `-j 2` to `-j 4`). A bare
-> `cmake --build build -j` spawns one compile per CPU core; on a many-core
-> machine (e.g. 24 threads) that compiles dozens of C++/CUDA translation units
-> in parallel, each peaking at 1–2 GB of RAM. This can exhaust system memory
-> and make the machine unresponsive or hang — before the build even finishes.
-> Cap it to a few jobs so the machine stays responsive enough to **cancel the
-> build before the system freezes**; `nice`/`ionice` help keep it interruptible:
->
-> ```sh
-> nice -n 19 cmake --build build -j 4
-> ```
+> **Build parallelism:** Use an explicit job count, such as
+> `cmake --build build -j 4`. Without a count, `-j` uses the native build tool's
+> default parallelism. Concurrent C++/CUDA compilation can exhaust available
+> memory. Reduce the count to `-j 2` or `-j 1` if memory is limited. On Unix,
+> `nice -n 19` lowers CPU scheduling priority, but does not limit memory use.
 
 ### CMake options
 
